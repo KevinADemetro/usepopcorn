@@ -47,12 +47,22 @@ const tempWatchedData = [
   },
 ];
 
+const KEY = "35ac9c38";
+
 const average = (arr) =>
   arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
 
 export default function App() {
-  const [movies, setMovies] = useState(tempMovieData);
-  const [watched, setWatched] = useState(tempWatchedData);
+  const [movies, setMovies] = useState([]);
+  const [watched, setWatched] = useState([]);
+
+  /*Fazer uma chamada de api dentro do componente desse jeito não é permitido pois 
+  a lógica do componente deve ser independente de qualquer dado externo (API)
+  também não pode dar um set direto na lógica de renderização porque o componente entra em loop
+  porque quando atualiza o state faz renderizar e no render atualiza o state de novo*/
+  // fetch(`https://www.omdbapi.com/?apikey=${KEY}&s=interstellar`)
+  //   .then((res) => res.json())
+  //   .then((data) => console.log(data));
 
   return (
     <>
