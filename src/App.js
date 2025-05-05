@@ -56,6 +56,7 @@ const average = (arr) =>
 export default function App() {
   const [movies, setMovies] = useState([]);
   const [watched, setWatched] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   /*Fazer uma chamada de api dentro do componente desse jeito não é permitido pois 
   a lógica do componente deve ser independente de qualquer dado externo (API)
@@ -70,11 +71,13 @@ export default function App() {
   mas por padrão passa um array vazio que vai executar só no mount do componente*/
   useEffect(function () {
     async function fetchMovies() {
+      setIsLoading(true);
       const res = await fetch(
         `https://www.omdbapi.com/?apikey=${KEY}&s=${query}`
       );
       const data = await res.json();
       setMovies(data.Search);
+      setIsLoading(false);
     }
     fetchMovies();
   }, []);
@@ -87,9 +90,7 @@ export default function App() {
         <NumResults movies={movies} />
       </NavBar>
       <Main>
-        <Box>
-          <MovieList movies={movies} />
-        </Box>
+        <Box>{isLoading ? <Loader /> : <MovieList movies={movies} />}</Box>
         <Box>
           <WatchedSumary watched={watched} />
           <WatchedMovieList watched={watched} />
@@ -97,6 +98,10 @@ export default function App() {
       </Main>
     </>
   );
+}
+
+function Loader() {
+  return <p className="loader">Loading...</p>;
 }
 
 function NavBar({ children }) {
