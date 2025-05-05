@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const tempMovieData = [
   {
@@ -63,6 +63,15 @@ export default function App() {
   // fetch(`https://www.omdbapi.com/?apikey=${KEY}&s=interstellar`)
   //   .then((res) => res.json())
   //   .then((data) => console.log(data));
+
+  /* UseEffect é um hook assim como useState, mas sua função é executar a função recebida como argumento
+  em um certo momento do lifecycle do componente, isso aparentemente é controlado pelo array que é recebido como segundo argumento
+  mas por padrão passa um array vazio que vai executar só no mount do componente*/
+  useEffect(function () {
+    fetch(`https://www.omdbapi.com/?apikey=${KEY}&s=interstellar`)
+      .then((res) => res.json())
+      .then((data) => setMovies(data.Search));
+  }, []);
 
   return (
     <>
