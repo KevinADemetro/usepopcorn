@@ -48,6 +48,7 @@ const tempWatchedData = [
 ];
 
 const KEY = "35ac9c38";
+const query = "matrix";
 
 const average = (arr) =>
   arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
@@ -68,9 +69,14 @@ export default function App() {
   em um certo momento do lifecycle do componente, isso aparentemente é controlado pelo array que é recebido como segundo argumento
   mas por padrão passa um array vazio que vai executar só no mount do componente*/
   useEffect(function () {
-    fetch(`https://www.omdbapi.com/?apikey=${KEY}&s=interstellar`)
-      .then((res) => res.json())
-      .then((data) => setMovies(data.Search));
+    async function fetchMovies() {
+      const res = await fetch(
+        `https://www.omdbapi.com/?apikey=${KEY}&s=${query}`
+      );
+      const data = await res.json();
+      setMovies(data.Search);
+    }
+    fetchMovies();
   }, []);
 
   return (
