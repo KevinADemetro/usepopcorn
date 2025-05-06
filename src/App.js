@@ -48,7 +48,7 @@ const tempWatchedData = [
 ];
 
 const KEY = "35ac9c38";
-const query = "matrix";
+const query = "asdfasfssaf";
 
 const average = (arr) =>
   arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
@@ -57,6 +57,7 @@ export default function App() {
   const [movies, setMovies] = useState([]);
   const [watched, setWatched] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
   /*Fazer uma chamada de api dentro do componente desse jeito não é permitido pois 
   a lógica do componente deve ser independente de qualquer dado externo (API)
@@ -71,13 +72,24 @@ export default function App() {
   mas por padrão passa um array vazio que vai executar só no mount do componente*/
   useEffect(function () {
     async function fetchMovies() {
-      setIsLoading(true);
-      const res = await fetch(
-        `https://www.omdbapi.com/?apikey=${KEY}&s=${query}`
-      );
-      const data = await res.json();
-      setMovies(data.Search);
-      setIsLoading(false);
+      try {
+        setIsLoading(true);
+        const res = await fetch(
+          `https://www.omdbapi.com/?apikey=${KEY}&s=${query}`
+        );
+        if (!res.ok)
+          throw new Error("Somethig went wrong with fetching movies");
+
+        const data = await res.json();
+        if (data.Response === "False") throw new Error(data.Error);
+
+        setMovies(data.Search);
+        setIsLoading(false);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
     }
     fetchMovies();
   }, []);
@@ -90,7 +102,12 @@ export default function App() {
         <NumResults movies={movies} />
       </NavBar>
       <Main>
-        <Box>{isLoading ? <Loader /> : <MovieList movies={movies} />}</Box>
+        <Box>
+          {/* {isLoading ? <Loader /> : <MovieList movies={movies} />} */}
+          {isLoading && <Loader />}
+          {!isLoading && !error && <MovieList movies={movies} />}
+          {error && <ErrorMessage message={error} />}
+        </Box>
         <Box>
           <WatchedSumary watched={watched} />
           <WatchedMovieList watched={watched} />
@@ -102,6 +119,10 @@ export default function App() {
 
 function Loader() {
   return <p className="loader">Loading...</p>;
+}
+
+function ErrorMessage({ message }) {
+  return <p className="error">{message}</p>;
 }
 
 function NavBar({ children }) {
