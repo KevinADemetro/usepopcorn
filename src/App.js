@@ -48,7 +48,7 @@ const tempWatchedData = [
 ];
 
 const KEY = "35ac9c38";
-const query = "asdfasfssaf";
+const tempQuery = "matrix";
 
 const average = (arr) =>
   arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
@@ -58,6 +58,25 @@ export default function App() {
   const [watched, setWatched] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [query, setQuery] = useState("");
+
+  /*Os effects são executados depois do browser paint no processo de renderização
+  então nesse caso esses três log o primeiro seria o "During render" porque ele está direto na lógica
+  de render depois after initial e depois o after every, por conta da ordem em que aparecem*/
+
+  /*Como o array está vazio só será chamado na primeira execução, pois não tem dependencias
+  que acionam esse effect */
+  // useEffect(function () {
+  //   console.log("After initial render");
+  // }, []);
+
+  /*Não ter o array de dependencia significa que todas as props e state são dependencia
+  ou seja em qualquer alteração de state ele será chamado*/
+  // useEffect(function () {
+  //   console.log("After every render");
+  // });
+
+  // console.log("Durgin render");
 
   /*Fazer uma chamada de api dentro do componente desse jeito não é permitido pois 
   a lógica do componente deve ser independente de qualquer dado externo (API)
@@ -70,35 +89,46 @@ export default function App() {
   /* UseEffect é um hook assim como useState, mas sua função é executar a função recebida como argumento
   em um certo momento do lifecycle do componente, isso aparentemente é controlado pelo array que é recebido como segundo argumento
   mas por padrão passa um array vazio que vai executar só no mount do componente*/
-  useEffect(function () {
-    async function fetchMovies() {
-      try {
-        setIsLoading(true);
-        const res = await fetch(
-          `https://www.omdbapi.com/?apikey=${KEY}&s=${query}`
-        );
-        if (!res.ok)
-          throw new Error("Somethig went wrong with fetching movies");
+  useEffect(
+    function () {
+      async function fetchMovies() {
+        try {
+          setIsLoading(true);
+          setError("");
 
-        const data = await res.json();
-        if (data.Response === "False") throw new Error(data.Error);
+          const res = await fetch(
+            `https://www.omdbapi.com/?apikey=${KEY}&s=${query}`
+          );
+          if (!res.ok)
+            throw new Error("Somethig went wrong with fetching movies");
 
-        setMovies(data.Search);
-        setIsLoading(false);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setIsLoading(false);
+          const data = await res.json();
+          if (data.Response === "False") throw new Error(data.Error);
+
+          setMovies(data.Search);
+          setIsLoading(false);
+        } catch (err) {
+          setError(err.message);
+        } finally {
+          setIsLoading(false);
+        }
       }
-    }
-    fetchMovies();
-  }, []);
+
+      if (query.length < 3) {
+        setMovies([]);
+        setError("");
+        return;
+      }
+      fetchMovies();
+    },
+    [query]
+  );
 
   return (
     <>
       <NavBar>
         <Logo />
-        <Search />
+        <Search query={query} setQuery={setQuery} />
         <NumResults movies={movies} />
       </NavBar>
       <Main>
@@ -138,9 +168,7 @@ function Logo() {
   );
 }
 
-function Search() {
-  const [query, setQuery] = useState("");
-
+function Search({ query, setQuery }) {
   return (
     <input
       className="search"
