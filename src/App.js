@@ -317,6 +317,8 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
     function () {
       if (!title) return;
       document.title = `Movie | ${title}`;
+
+      return () => (document.title = "usePopcorn");
     },
     [title]
   );
@@ -413,7 +415,7 @@ function WatchedMovieList({ watched, onDeleteWatched }) {
       {watched.map((movie) => (
         <WatchedMovie
           movie={movie}
-          key={movie.imdbID}
+          key={movie.imdbId}
           onDeleteWatched={onDeleteWatched}
         />
       ))}
