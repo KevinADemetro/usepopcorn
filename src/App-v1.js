@@ -1,6 +1,53 @@
 import { useEffect, useState } from "react";
 import StarRating from "./StarRating";
 
+const tempMovieData = [
+  {
+    imdbID: "tt1375666",
+    Title: "Inception",
+    Year: "2010",
+    Poster:
+      "https://m.media-amazon.com/images/M/MV5BMjAxMzY3NjcxNF5BMl5BanBnXkFtZTcwNTI5OTM0Mw@@._V1_SX300.jpg",
+  },
+  {
+    imdbID: "tt0133093",
+    Title: "The Matrix",
+    Year: "1999",
+    Poster:
+      "https://m.media-amazon.com/images/M/MV5BNzQzOTk3OTAtNDQ0Zi00ZTVkLWI0MTEtMDllZjNkYzNjNTc4L2ltYWdlXkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_SX300.jpg",
+  },
+  {
+    imdbID: "tt6751668",
+    Title: "Parasite",
+    Year: "2019",
+    Poster:
+      "https://m.media-amazon.com/images/M/MV5BYWZjMjk3ZTItODQ2ZC00NTY5LWE0ZDYtZTI3MjcwN2Q5NTVkXkEyXkFqcGdeQXVyODk4OTc3MTY@._V1_SX300.jpg",
+  },
+];
+
+const tempWatchedData = [
+  {
+    imdbID: "tt1375666",
+    Title: "Inception",
+    Year: "2010",
+    Poster:
+      "https://m.media-amazon.com/images/M/MV5BMjAxMzY3NjcxNF5BMl5BanBnXkFtZTcwNTI5OTM0Mw@@._V1_SX300.jpg",
+    runtime: 148,
+    imdbRating: 8.8,
+    userRating: 10,
+  },
+  {
+    imdbID: "tt0088763",
+    Title: "Back to the Future",
+    Year: "1985",
+    Poster:
+      "https://m.media-amazon.com/images/M/MV5BZmU0M2Y1OGUtZjIxNi00ZjBkLTg1MjgtOWIyNThiZWIwYjRiXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_SX300.jpg",
+    runtime: 116,
+    imdbRating: 8.5,
+    userRating: 9,
+  },
+];
+
 const KEY = "35ac9c38";
 
 const average = (arr) =>
@@ -8,14 +55,11 @@ const average = (arr) =>
 
 export default function App() {
   const [movies, setMovies] = useState([]);
+  const [watched, setWatched] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState(null);
-  const [watched, setWatched] = useState(function () {
-    const storedValue = JSON.parse(localStorage.getItem("watched"));
-    return storedValue;
-  });
 
   function handleSelectMovie(id) {
     setSelectedId((selectedId) => (id === selectedId ? null : id));
@@ -24,6 +68,31 @@ export default function App() {
   function handleCloseMovie() {
     setSelectedId(null);
   }
+  /*Os effects são executados depois do browser paint no processo de renderização
+  então nesse caso esses três log o primeiro seria o "During render" porque ele está direto na lógica
+  de render depois after initial e depois o after every, por conta da ordem em que aparecem*/
+
+  /*Como o array está vazio só será chamado na primeira execução, pois não tem dependencias
+  que acionam esse effect */
+  // useEffect(function () {
+  //   console.log("After initial render");
+  // }, []);
+
+  /*Não ter o array de dependencia significa que todas as props e state são dependencia
+  ou seja em qualquer alteração de state ele será chamado*/
+  // useEffect(function () {
+  //   console.log("After every render");
+  // });
+
+  // console.log("Durgin render");
+
+  /*Fazer uma chamada de api dentro do componente desse jeito não é permitido pois 
+  a lógica do componente deve ser independente de qualquer dado externo (API)
+  também não pode dar um set direto na lógica de renderização porque o componente entra em loop
+  porque quando atualiza o state faz renderizar e no render atualiza o state de novo*/
+  // fetch(`https://www.omdbapi.com/?apikey=${KEY}&s=interstellar`)
+  //   .then((res) => res.json())
+  //   .then((data) => console.log(data));
 
   function handleAddWatched(movie) {
     setWatched((watched) => [...watched, movie]);
@@ -33,13 +102,9 @@ export default function App() {
     setWatched((watched) => watched.filter((movie) => movie.imdbId !== id));
   }
 
-  useEffect(
-    function () {
-      localStorage.setItem("watched", JSON.stringify(watched));
-    },
-    [watched]
-  );
-
+  /* UseEffect é um hook assim como useState, mas sua função é executar a função recebida como argumento
+  em um certo momento do lifecycle do componente, isso aparentemente é controlado pelo array que é recebido como segundo argumento
+  mas por padrão passa um array vazio que vai executar só no mount do componente*/
   useEffect(
     function () {
       const controller = new AbortController();
