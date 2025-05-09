@@ -36,7 +36,7 @@ export default function App() {
     },
     [watched]
   );
-  const { movies, isLoading, error } = useMovies(query, handleCloseMovie);
+  const { movies, isLoading, error } = useMovies(query);
   return (
     <>
       <NavBar>
